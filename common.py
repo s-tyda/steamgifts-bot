@@ -2,8 +2,10 @@ import six
 import colorama
 from pyfiglet import figlet_format
 from termcolor import colored
+from sys import platform
 
-colorama.init()
+if platform == "win32":
+    colorama.init()
 
 
 def log(string, color, font="slant", figlet=False):
