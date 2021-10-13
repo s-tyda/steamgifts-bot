@@ -25,10 +25,10 @@ class PointValidator(Validator):
 class ConfigReader(metaclass=Singleton):
     def __init__(self) -> None:
         self.config = configparser.ConfigParser()
-        self.config.read('config.ini')
+        self.config.read('config/config.ini')
 
     def _save_config(self) -> None:
-        with open('config.ini', 'w') as configfile:
+        with open('config/config.ini', 'w') as configfile:
             self.config.write(configfile)
 
     def _ask_for_cookie(self) -> str:
@@ -53,7 +53,7 @@ class ConfigReader(metaclass=Singleton):
 
     @cached_property
     def data(self) -> Dict[str, Any]:
-        with open("config.json") as json_data_file:
+        with open("config/config.json") as json_data_file:
             data = json.load(json_data_file)
 
         if not self.config['DEFAULT'].get('cookie'):
