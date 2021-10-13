@@ -1,21 +1,14 @@
-import six
-import colorama
 from pyfiglet import figlet_format
-from termcolor import colored
 from threading import Lock
 from typing import Any
-
-colorama.init()
+from rich import print
 
 
 def log(string, color, font="slant", figlet=False):
-    if colored:
-        if not figlet:
-            six.print_(colored(string, color))
-        else:
-            six.print_(colored(figlet_format(string, font=font), color))
+    if not figlet:
+        print(f'[{color}]{string}[/{color}]')
     else:
-        six.print_(string)
+        print(f'[{color}]{figlet_format(string, font=font)}[/{color}]')
 
 
 class Singleton(type):

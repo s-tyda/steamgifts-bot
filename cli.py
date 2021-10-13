@@ -1,8 +1,8 @@
 import configparser
-import json
-from prompt_toolkit import document
-from prompt_toolkit.validation import Validator, ValidationError
 import questionary
+import json
+from prompt_toolkit.document import Document
+from prompt_toolkit.validation import Validator, ValidationError
 from main import SteamGifts
 from common import log, Singleton
 from typing import Dict, Any
@@ -10,7 +10,7 @@ from functools import cached_property
 
 
 class PointValidator(Validator):
-    def validate(self, doc: document.Document) -> bool:
+    def validate(self, doc: Document) -> bool:
         value = doc.text
         try:
             value = int(value)
