@@ -1,101 +1,85 @@
 import configparser
 import json
-from PyInquirer import (Token, ValidationError, Validator, prompt, style_from_dict)
 from prompt_toolkit import document
+from prompt_toolkit.validation import Validator, ValidationError
+import questionary
 from main import SteamGifts
-from common import log
-
-config = configparser.ConfigParser()
-config.read('config.ini')
-
-with open("config.json") as json_data_file:
-    data = json.load(json_data_file)
-
-style = style_from_dict({
-    Token.QuestionMark: '#fac731 bold',
-    Token.Answer: '#4688f1 bold',
-    Token.Selected: '#0abf5b',
-    Token.Pointer: '#673ab7 bold',
-})
+from common import log, Singleton
+from typing import Dict, Any
+from functools import cached_property
 
 
 class PointValidator(Validator):
-    def validate(self, doc: document.Document):
+    def validate(self, doc: document.Document) -> bool:
         value = doc.text
         try:
             value = int(value)
         except Exception:
-            raise ValidationError(message='Value should be greater than 0', cursor_position=len(doc.text))
+            raise ValidationError(message='Value should be a number', cursor_position=len(doc.text))
 
         if value <= 0:
             raise ValidationError(message='Value should be greater than 0', cursor_position=len(doc.text))
         return True
 
 
-def ask(question_type, name, message, validate=None, choices=None):
-    questions = [
-        {
-            'type': question_type,
-            'name': name,
-            'message': message,
-            'validate': validate,
-        },
-    ]
-    if choices:
-        questions[0].update({
-            'choices': choices,
-        })
-    answers = prompt(questions, style=style)
-    return answers
+class ConfigReader(metaclass=Singleton):
+    def __init__(self) -> None:
+        self.config = configparser.ConfigParser()
+        self.config.read('config.ini')
+
+    def _save_config(self) -> None:
+        with open('config.ini', 'w') as configfile:
+            self.config.write(configfile)
+
+    def _ask_for_cookie(self) -> str:
+        cookie = questionary.text("Enter PHPSESSID cookie (Only needed to provide once):").ask()
+        self.config['DEFAULT']['cookie'] = cookie
+        self._save_config()
+        return cookie
+
+    def _ask_for_pinned(self) -> bool:
+        pinned_games = questionary.confirm("'Should bot enter pinned games?'").ask()
+        self.config['DEFAULT']['pinned'] = str(pinned_games)
+        self._save_config()
+        return pinned_games
+
+    def _ask_for_min_points(self) -> int:
+        min_points = questionary.text(message='Enter minimum points to start working '
+                                              '(bot will try to enter giveaways until minimum value is reached):',
+                                      validate=PointValidator).ask()
+        self.config['DEFAULT']['min_points'] = min_points
+        self._save_config()
+        return int(min_points)
+
+    @cached_property
+    def data(self) -> Dict[str, Any]:
+        with open("config.json") as json_data_file:
+            data = json.load(json_data_file)
+
+        if not self.config['DEFAULT'].get('cookie'):
+            data['cookie'] = self._ask_for_cookie()
+        else:
+            data['cookie'] = self.config['DEFAULT'].get('cookie')
+
+        if not self.config['DEFAULT'].get('pinned'):
+            data['pinned'] = self._ask_for_pinned()
+        else:
+            data['pinned'] = self.config['DEFAULT'].getboolean('pinned')
+
+        if not self.config['DEFAULT'].get('min_points'):
+            data['min_points'] = self._ask_for_min_points()
+        else:
+            data['min_points'] = self.config['DEFAULT'].getint('min_points')
+        return data
 
 
-def ask_for_cookie():
-    cookie = ask(question_type='input',
-                 name='cookie',
-                 message='Enter PHPSESSID cookie (Only needed to provide once):')
-    config['DEFAULT']['cookie'] = cookie['cookie']
-
-    with open('config.ini', 'w') as configfile:
-        config.write(configfile)
-    return cookie['cookie']
-
-
-def run():
+def run() -> None:
     log("SteamGifts Bot", color="blue", figlet=True)
-    log("Welcome to SteamGifts Bot!", "green")
-    log("Created by: github.com/s-tyda", "white")
+    log("Welcome to SteamGifts Bot!", color="green")
+    log("Created by: github.com/s-tyda", color="white")
 
-    if not config['DEFAULT'].get('cookie'):
-        cookie = ask_for_cookie()
-    else:
-        cookie = config['DEFAULT'].get('cookie')
-
-    if not config['DEFAULT'].get('pinned'):
-        pinned_games = ask(question_type='confirm',
-                           name='pinned',
-                           message='Should bot enter pinned games?')['pinned']
-        config['DEFAULT']['pinned'] = pinned_games
-        with open('config.ini', 'w') as configfile:
-            config.write(configfile)
-    else:
-        pinned_games = config['DEFAULT'].getboolean('pinned')
-
-    if not config['DEFAULT'].get('min_points'):
-        min_points = ask(question_type='input',
-                         name='min_points',
-                         message='Enter minimum points to start working '
-                                 '(bot will try to enter giveaways until minimum value is reached):',
-                         validate=PointValidator)['min_points']
-        config['DEFAULT']['min_points'] = min_points
-        with open('config.ini', 'w') as configfile:
-            config.write(configfile)
-    else:
-        min_points = config['DEFAULT'].getint('min_points')
-
-    priorities = data["priorities"]
-    filters = data["filters"]
-
-    s = SteamGifts(cookie=cookie, priorities=priorities, filters=filters, pinned=pinned_games, min_points=min_points)
+    config = ConfigReader()
+    s = SteamGifts(**config.data)
     s.start()
 
 
