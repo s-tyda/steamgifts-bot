@@ -14,9 +14,27 @@ The bot is specially designed for [SteamGifts.com](https://www.steamgifts.com/)
 3. Find `PHPSESSID` cookie in your browser.
 4. Start the bot and follow instructions.
 
-### Run from sources
+### Run from source
 ```bash
+pip install -r requirements.txt
 python src/cli.py
+```
+
+### Pull docker image
+```bash
+docker pull ghcr.io/s-tyda/steamgifts-bot:master
+docker run ghcr.io/s-tyda/steamgifts-bot:master
+```
+
+### Or build image yourself
+```bash
+docker build -t steamgifts-bot .
+docker run -d steamgifts-bot
+```
+
+### See docker logs
+```bash
+docker logs --follow container-id
 ```
 
 ### Help
