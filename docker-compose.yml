@@ -1,0 +1,5 @@
+services:
+  sg:
+    image: ghcr.io/s-tyda/steamgifts-bot:master
+    volumes:
+      - ./config:/app/config
