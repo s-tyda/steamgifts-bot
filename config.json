@@ -1,0 +1,18 @@
+{
+  "filters": {
+    "All": "search?page=%d&dlc=false",
+    "Wishlist": "search?page=%d&type=wishlist&dlc=false",
+    "Recommended": "search?page=%d&type=recommended&dlc=false",
+    "Copies": "search?page=%d&copy_min=2&dlc=false",
+    "DLC": "search?page=%d&dlc=true",
+    "Group": "search?page=%d&type=group&dlc=false",
+    "New": "search?page=%d&type=new&dlc=false"
+  },
+  "priorities": [
+    "Group",
+    "Copies",
+    "Recommended",
+    "Wishlist",
+    "All"
+  ]
+}
