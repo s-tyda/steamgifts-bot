@@ -9,7 +9,7 @@ The bot is specially designed for [SteamGifts.com](https://www.steamgifts.com/)
 - Can run 24/7.
 
 ### How to run
-1. Download docker image or clone the code.
+1. Install with one of the options below.
 2. Sign in on [SteamGifts.com](https://www.steamgifts.com/) by Steam.
 3. Find `PHPSESSID` cookie in your browser.
 4. Configure config files.
@@ -51,27 +51,61 @@ min_points = 20
 - **filters** object contains all url filters from the SteamGifts, where the key is name to use in priorities and value is the filter.
 - **priorities** object contains filters, in order, which bot should enter.
 
-### Run from source
+### Run with docker-compose
+1. Download [latest release](https://github.com/s-tyda/steamgifts-bot/releases/tag/v1.0) or clone the code.
+2. Enter project directory.
 ```bash
-pip install -r requirements.txt
-python src/cli.py
+cd steamgifts-bot/
+```
+3. Run docker-compose.
+```bash
+docker-compose up -d
+```
+To stop container:
+```bash
+docker-compose down
+```
+To see container logs:
+```bash
+docker-compose logs -f
 ```
 
-### Pull docker image (actually using default config.json only)
+### Build docker image yourself
+1. Clone repository.
+2. Enter project directory.
 ```bash
-docker pull ghcr.io/s-tyda/steamgifts-bot:master
-docker run ghcr.io/s-tyda/steamgifts-bot:master
+cd steamgifts-bot/
 ```
-
-### Or build image yourself
+3. Build image.
 ```bash
 docker build -t steamgifts-bot .
+```
+4. Run container.
+```bash
 docker run -d steamgifts-bot
 ```
-
-### See docker logs
+To stop container:
+```bash
+docker stop container-id
+```
+To see container logs:
 ```bash
 docker logs --follow container-id
+```
+
+### Run from source
+1. Clone repository.
+2. Enter project directory.
+```bash
+cd steamgifts-bot/
+```
+3. Install dependencies.
+```bash
+pip install -r requirements.txt
+```
+4. Run script.
+```bash
+python src/cli.py
 ```
 
 ### Help
