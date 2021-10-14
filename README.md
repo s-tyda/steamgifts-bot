@@ -1,18 +1,15 @@
 # steamgifts-bot
 
+The bot is specially designed for [SteamGifts.com](https://www.steamgifts.com/).
+
 ## Contents
 
-- [About](#about)
 - [How to run](#how-to-run)
 - [Config](#config)
 - [Run with docker-compose](#run-with-docker-compose)
 - [Build docker image yourself](#build-docker-image-yourself)
 - [Run from source](#run-from-source)
 - [Help](#help)
-
-## About
-The bot is specially designed for [SteamGifts.com](https://www.steamgifts.com/)
-
 
 ## Features
 - Automatically enters giveaways.
