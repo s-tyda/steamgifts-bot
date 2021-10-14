@@ -1,6 +1,6 @@
 # steamgifts-bot
 
-Configurable bot for [SteamGifts.com](https://www.steamgifts.com/), which automatically enters giveaways.
+Configurable bot for [steamgifts.com](https://www.steamgifts.com/), which automatically enters giveaways.
 
 ## Contents
 
