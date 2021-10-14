@@ -20,7 +20,7 @@ Configurable bot for [steamgifts.com](https://www.steamgifts.com/), which automa
 
 ## How to run
 1. Install with one of the options below.
-2. Sign in on [SteamGifts.com](https://www.steamgifts.com/) by Steam.
+2. Sign in on [steamgifts.com](https://www.steamgifts.com/) by Steam.
 3. Find `PHPSESSID` cookie in your browser.
 4. Configure config files.
 5. Start the bot.
