@@ -72,17 +72,20 @@ class SteamGifts:
             classes = tag.get('class', [])
             return 'is-faded' not in classes and 'giveaway__row-inner-wrap' in classes
 
-    def get_game_content(self, filter_type, page=1):
+    @property
+    def has_available_points(self):
+        if self.points == 0 or self.points < self.min_points:
+            self.waiting_for_points = True
+            return False
+        else:
+            return True
+
+    def enter_giveaways(self, filter_type, page=1):
         txt = f"⚙️  Filtering with filter {filter_type}"
         log(txt, "yellow")
         n = page
         while True:
-            if self.points == 0 or self.points < self.min_points:
-                txt = f"🛋️  Sleeping to get more points. We have {self.points} points, " \
-                      f"but we need {self.min_points} to start."
-                log(txt, "yellow")
-                self.waiting_for_points = True
-                sleep(900)
+            if not self.has_available_points:
                 break
 
             txt = "⚙️  Retrieving games from %d page." % n
@@ -95,23 +98,26 @@ class SteamGifts:
 
             game_list = soup.find_all(self._select_not_entered_game)
 
-            if not len(game_list) or not game_list:
+            if not game_list or not len(game_list):
                 log("⛔  Page is empty. Selecting next filter.", "red")
                 sleep(2)
                 break
 
-            for item in game_list:
-                if len(item.get('class', [])) == 2 and not self.pinned:
+            for game in game_list:
+                if not self.has_available_points:
+                    break
+
+                if len(game.get('class', [])) == 2 and not self.pinned:
                     continue
 
-                game_cost = item.find_all('span', {'class': 'giveaway__heading__thin'})[-1]
+                game_cost = game.find_all('span', {'class': 'giveaway__heading__thin'})[-1]
 
                 if game_cost:
                     game_cost = game_cost.getText().replace('(', '').replace(')', '').replace('P', '')
                 else:
                     continue
 
-                game_name = item.find('a', {'class': 'giveaway__heading__name'}).text
+                game_name = game.find('a', {'class': 'giveaway__heading__name'}).text
 
                 if self.points - int(game_cost) < 0:
                     txt = f"⛔ Not enough points to enter: {game_name}"
@@ -119,9 +125,9 @@ class SteamGifts:
                     continue
 
                 elif self.points - int(game_cost) >= 0:
-                    game_id = item.find('a', {'class': 'giveaway__heading__name'})['href'].split('/')[2]
-                    res = self.entry_gift(game_id)
-                    if res:
+                    game_id = game.find('a', {'class': 'giveaway__heading__name'})['href'].split('/')[2]
+                    is_success = self.enter_giveaway(game_id)
+                    if is_success:
                         self.points -= int(game_cost)
                         txt = f"🎉 One more game! Has just entered {game_name}"
                         log(txt, "green")
@@ -129,7 +135,7 @@ class SteamGifts:
 
             n = n+1
 
-    def entry_gift(self, game_id):
+    def enter_giveaway(self, game_id):
         payload = {'xsrf_token': self.xsrf_token, 'do': 'entry_insert', 'code': game_id}
         entry = requests.post('https://www.steamgifts.com/ajax.php', data=payload, cookies=self.cookie)
         json_data = json.loads(entry.text)
@@ -141,13 +147,19 @@ class SteamGifts:
         while True:
             self._update_info()
 
-            if self.points > 0:
+            if self.points >= self.min_points:
                 txt = "🤖 Hoho! I am back! You have %d points. Lets hack." % self.points
                 log(txt, "blue")
+                for filter_type in self.priorities:
+                    self.enter_giveaways(filter_type)
+            else:
+                self.waiting_for_points = True
 
-            for filter_type in self.priorities:
-                self.get_game_content(filter_type)
-
+            if self.waiting_for_points:
+                txt = f"🛋️  Sleeping to get more points. We have {self.points} points, " \
+                      f"but we need {self.min_points} to start."
+                log(txt, "yellow")
             if not self.waiting_for_points:
-                log("🛋️  List of games is ended. Waiting 2 mins to update...", "yellow")
-                sleep(120)
+                log("🛋️  List of games is ended. Waiting 15 mins to update...", "yellow")
+
+            sleep(900)
