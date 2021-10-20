@@ -6,9 +6,9 @@ from rich import print
 
 def log(string, color, font="slant", figlet=False):
     if not figlet:
-        print(f'[{color}]{string}[/{color}]')
+        print(f"[{color}]{string}[/{color}]")
     else:
-        print(f'[{color}]{figlet_format(string, font=font)}[/{color}]')
+        print(f"[{color}]{figlet_format(string, font=font)}[/{color}]")
 
 
 class Singleton(type):
