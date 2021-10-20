@@ -1,6 +1,8 @@
 import json
 from random import randint
 from time import sleep
+
+import bs4
 import requests
 from bs4 import BeautifulSoup
 from requests.adapters import HTTPAdapter
@@ -11,12 +13,12 @@ from typing import Dict, List, Optional
 
 class SteamGifts:
     def __init__(self, cookie: Dict[str, str], priorities: List[str], filters: Dict[str, str],
-                 pinned: bool, min_points: int) -> None:
+                 enter_pinned_games: bool, min_points: int) -> None:
         self.cookie = {
             'PHPSESSID': cookie
         }
         self.priorities = priorities
-        self.pinned = pinned
+        self.enter_pinned_games = enter_pinned_games
         self.min_points = min_points
 
         self.base = "https://www.steamgifts.com"
@@ -48,7 +50,7 @@ class SteamGifts:
         soup = BeautifulSoup(r.text, 'html.parser')
         return soup
 
-    def _update_info(self):
+    def _update_info(self) -> None:
         soup = self._get_soup_from_page(self.base)
 
         try:
@@ -57,30 +59,29 @@ class SteamGifts:
             self.waiting_for_points = False
         except TypeError:
             log("⛔  Cookie is not valid.", "red")
-            sleep(10)
             exit()
 
     @staticmethod
-    def _select_if_entered(tag):
+    def _select_if_entered(tag: bs4.Tag) -> bool:
         if tag.name == "div":
             classes = tag.get("class", [])
             return "sidebar__entry-insert" in classes and "is-hidden" in classes
 
     @staticmethod
-    def _select_not_entered_game(tag):
+    def _select_not_entered_game(tag: bs4.Tag) -> bool:
         if tag.name == 'div':
             classes = tag.get('class', [])
             return 'is-faded' not in classes and 'giveaway__row-inner-wrap' in classes
 
     @property
-    def has_available_points(self):
+    def has_available_points(self) -> bool:
         if self.points == 0 or self.points < self.min_points:
             self.waiting_for_points = True
             return False
         else:
             return True
 
-    def enter_giveaways(self, filter_type, page=1):
+    def enter_giveaways(self, filter_type: str, page: int = 1) -> None:
         txt = f"⚙️  Filtering with filter {filter_type}"
         log(txt, "yellow")
         n = page
@@ -107,7 +108,7 @@ class SteamGifts:
                 if not self.has_available_points:
                     break
 
-                if len(game.get('class', [])) == 2 and not self.pinned:
+                if len(game.get('class', [])) == 2 and not self.enter_pinned_games:
                     continue
 
                 game_cost = game.find_all('span', {'class': 'giveaway__heading__thin'})[-1]
@@ -135,7 +136,7 @@ class SteamGifts:
 
             n = n+1
 
-    def enter_giveaway(self, game_id):
+    def enter_giveaway(self, game_id: str) -> bool:
         payload = {'xsrf_token': self.xsrf_token, 'do': 'entry_insert', 'code': game_id}
         entry = requests.post('https://www.steamgifts.com/ajax.php', data=payload, cookies=self.cookie)
         json_data = json.loads(entry.text)
@@ -143,7 +144,7 @@ class SteamGifts:
         if json_data['type'] == 'success':
             return True
 
-    def start(self):
+    def start(self) -> None:
         while True:
             self._update_info()
 
