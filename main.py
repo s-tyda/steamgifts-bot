@@ -23,6 +23,7 @@ class SteamGifts:
         self.session = requests.Session()
 
         self.filters = filters
+        self.waiting_for_points = False
 
         self._update_info()
 
@@ -53,6 +54,7 @@ class SteamGifts:
         try:
             self.xsrf_token = soup.find('input', {'name': 'xsrf_token'})['value']
             self.points = int(soup.find('span', {'class': 'nav__points'}).text)
+            self.waiting_for_points = False
         except TypeError:
             log("⛔  Cookie is not valid.", "red")
             sleep(10)
@@ -75,6 +77,14 @@ class SteamGifts:
         log(txt, "yellow")
         n = page
         while True:
+            if self.points == 0 or self.points < self.min_points:
+                txt = f"🛋️  Sleeping to get more points. We have {self.points} points, " \
+                      f"but we need {self.min_points} to start."
+                log(txt, "yellow")
+                self.waiting_for_points = True
+                sleep(900)
+                break
+
             txt = "⚙️  Retrieving games from %d page." % n
             log(txt, "magenta")
 
@@ -93,14 +103,6 @@ class SteamGifts:
             for item in game_list:
                 if len(item.get('class', [])) == 2 and not self.pinned:
                     continue
-
-                if self.points == 0 or self.points < self.min_points:
-                    txt = f"🛋️  Sleeping to get more points. We have {self.points} points, " \
-                          f"but we need {self.min_points} to start."
-                    log(txt, "yellow")
-                    sleep(900)
-                    self.start()
-                    break
 
                 game_cost = item.find_all('span', {'class': 'giveaway__heading__thin'})[-1]
 
@@ -146,5 +148,6 @@ class SteamGifts:
             for filter_type in self.priorities:
                 self.get_game_content(filter_type)
 
-            log("🛋️  List of games is ended. Waiting 2 mins to update...", "yellow")
-            sleep(120)
+            if not self.waiting_for_points:
+                log("🛋️  List of games is ended. Waiting 2 mins to update...", "yellow")
+                sleep(120)
