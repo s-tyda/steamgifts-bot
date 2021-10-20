@@ -175,7 +175,7 @@ class SteamGifts:
             ]
             self.points = int(soup.find("span", {"class": "nav__points"}).text)
         except TypeError:
-            log("⛔  Cookie is not valid.", "red")
+            log("⛔ Cookie is not valid.", "red")
             exit()
 
     @property
@@ -186,19 +186,19 @@ class SteamGifts:
             return True
 
     def enter_giveaways(self, filter_type: str, start_page: int = 1) -> None:
-        txt = f"⚙️  Filtering with filter {filter_type}"
+        txt = f"⚙️ Filtering with filter {filter_type}"
         log(txt, "yellow")
 
         page_number = start_page
 
         while self.has_available_points:
-            txt = f"⚙️  Retrieving non-entered games from {page_number} page."
+            txt = f"⚙️ Retrieving non-entered games from {page_number} page."
             log(txt, "magenta")
 
             page = Page(self, filter_type, page_number)
 
             if page.is_empty:
-                log("⛔  Page is empty. Selecting next filter.", "red")
+                log("⛔ Page is empty. Selecting next filter.", "red")
                 sleep(2)
                 break
 
@@ -223,13 +223,13 @@ class SteamGifts:
 
             if self.has_available_points:
                 txt = (
-                    f"🛋️  Sleeping to get more points. "
+                    f"🛋️ Sleeping to get more points. "
                     f"We have {self.points} points, "
                     f"but we need {self.min_points} to start."
                 )
             else:
                 txt = (
-                    "🛋️  List of games is ended. Waiting 15 mins to update..."
+                    "🛋️ List of games is ended. Waiting 15 mins to update..."
                 )
 
             log(txt, "yellow")
