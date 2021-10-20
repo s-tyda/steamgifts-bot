@@ -29,12 +29,12 @@ Configurable bot for [steamgifts.com](https://www.steamgifts.com/), which automa
 1. Configure `config.ini` file.
 ```ini
 [DEFAULT]
-cookie = 
-pinned = yes
+cookie = j06gtgcn7o6f83t4nq6974jngs7dmictv4oinkcqrnfnu8gu
+enter_pinned_games = yes
 min_points = 20
 ```
 - `cookie` is the place for your PHPSESSID cookie.
-- `pinned` checks if the bot should enter pinned games.
+- `enter_pinned_games` checks if the bot should enter pinned games.
 - `min_points` is the minimum points account should have to make the bot enter giveaways.
 
 2. Configure `config.json` file.
@@ -78,6 +78,10 @@ docker-compose down
 To see container logs:
 ```bash
 docker-compose logs -f
+```
+To update official docker image
+```bash
+docker pull ghcr.io/s-tyda/steamgifts-bot:master
 ```
 
 ## Build docker image yourself
