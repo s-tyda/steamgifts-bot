@@ -136,15 +136,15 @@ class SteamGifts:
             return True
 
     def start(self):
-        self._update_info()
+        while True:
+            self._update_info()
 
-        if self.points > 0:
-            txt = "🤖 Hoho! I am back! You have %d points. Lets hack." % self.points
-            log(txt, "blue")
+            if self.points > 0:
+                txt = "🤖 Hoho! I am back! You have %d points. Lets hack." % self.points
+                log(txt, "blue")
 
-        for filter_type in self.priorities:
-            self.get_game_content(filter_type)
+            for filter_type in self.priorities:
+                self.get_game_content(filter_type)
 
-        log("🛋️  List of games is ended. Waiting 2 mins to update...", "yellow")
-        sleep(120)
-        self.start()
+            log("🛋️  List of games is ended. Waiting 2 mins to update...", "yellow")
+            sleep(120)
