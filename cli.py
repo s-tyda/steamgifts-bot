@@ -49,7 +49,7 @@ class ConfigReader(metaclass=Singleton):
         pinned_games = questionary.confirm(
             "'Should bot enter pinned games?'"
         ).ask()
-        self.config["DEFAULT"]["pinned"] = str(pinned_games)
+        self.config["DEFAULT"]["enter_pinned_games"] = str(pinned_games)
         self._save_config()
         return pinned_games
 
@@ -73,10 +73,12 @@ class ConfigReader(metaclass=Singleton):
         else:
             data["cookie"] = self.config["DEFAULT"].get("cookie")
 
-        if not self.config["DEFAULT"].get("pinned"):
-            data["pinned"] = self._ask_for_pinned()
+        if not self.config["DEFAULT"].get("enter_pinned_games"):
+            data["enter_pinned_games"] = self._ask_for_pinned()
         else:
-            data["pinned"] = self.config["DEFAULT"].getboolean("pinned")
+            data["enter_pinned_games"] = self.config["DEFAULT"].getboolean(
+                "enter_pinned_games"
+            )
 
         if not self.config["DEFAULT"].get("min_points"):
             data["min_points"] = self._ask_for_min_points()
