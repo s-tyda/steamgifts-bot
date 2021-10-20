@@ -64,7 +64,6 @@ class SteamGifts:
                 "value"
             ]
             self.points = int(soup.find("span", {"class": "nav__points"}).text)
-            self.waiting_for_points = False
         except TypeError:
             log("⛔  Cookie is not valid.", "red")
             exit()
@@ -98,10 +97,7 @@ class SteamGifts:
         txt = f"⚙️  Filtering with filter {filter_type}"
         log(txt, "yellow")
         n = page
-        while True:
-            if not self.has_available_points:
-                break
-
+        while self.has_available_points:
             txt = "⚙️  Retrieving games from %d page." % n
             log(txt, "magenta")
 
@@ -109,7 +105,6 @@ class SteamGifts:
             paginated_url = f"{self.base}/giveaways/{filtered_url}"
 
             soup = self._get_soup_from_page(paginated_url)
-
             game_list = soup.find_all(self._select_not_entered_game)
 
             if not game_list or not len(game_list):
