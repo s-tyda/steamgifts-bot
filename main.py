@@ -13,11 +13,15 @@ from common import log
 
 
 class SteamGifts:
-    def __init__(self, cookie: Dict[str, str], priorities: List[str], filters: Dict[str, str],
-                 enter_pinned_games: bool, min_points: int) -> None:
-        self.cookie = {
-            'PHPSESSID': cookie
-        }
+    def __init__(
+        self,
+        cookie: Dict[str, str],
+        priorities: List[str],
+        filters: Dict[str, str],
+        enter_pinned_games: bool,
+        min_points: int,
+    ) -> None:
+        self.cookie = {"PHPSESSID": cookie}
         self.priorities = priorities
         self.enter_pinned_games = enter_pinned_games
         self.min_points = min_points
@@ -30,8 +34,9 @@ class SteamGifts:
 
         self._update_info()
 
-    def _requests_retry_session(self, retries: Optional[int] = 5,
-                                backoff_factor: Optional[float] = 0.3) -> requests.Session:
+    def _requests_retry_session(
+        self, retries: Optional[int] = 5, backoff_factor: Optional[float] = 0.3
+    ) -> requests.Session:
         session = self.session or requests.Session()
         retry = Retry(
             total=retries,
@@ -41,22 +46,24 @@ class SteamGifts:
             status_forcelist=(500, 502, 504),
         )
         adapter = HTTPAdapter(max_retries=retry)
-        session.mount('http://', adapter)
-        session.mount('https://', adapter)
+        session.mount("http://", adapter)
+        session.mount("https://", adapter)
         return session
 
     def _get_soup_from_page(self, url: str) -> BeautifulSoup:
         self._requests_retry_session().get(url)
         r = requests.get(url, cookies=self.cookie)
-        soup = BeautifulSoup(r.text, 'html.parser')
+        soup = BeautifulSoup(r.text, "html.parser")
         return soup
 
     def _update_info(self) -> None:
         soup = self._get_soup_from_page(self.base)
 
         try:
-            self.xsrf_token = soup.find('input', {'name': 'xsrf_token'})['value']
-            self.points = int(soup.find('span', {'class': 'nav__points'}).text)
+            self.xsrf_token = soup.find("input", {"name": "xsrf_token"})[
+                "value"
+            ]
+            self.points = int(soup.find("span", {"class": "nav__points"}).text)
             self.waiting_for_points = False
         except TypeError:
             log("⛔  Cookie is not valid.", "red")
@@ -66,13 +73,18 @@ class SteamGifts:
     def _select_if_entered(tag: bs4.Tag) -> bool:
         if tag.name == "div":
             classes = tag.get("class", [])
-            return "sidebar__entry-insert" in classes and "is-hidden" in classes
+            return (
+                "sidebar__entry-insert" in classes and "is-hidden" in classes
+            )
 
     @staticmethod
     def _select_not_entered_game(tag: bs4.Tag) -> bool:
-        if tag.name == 'div':
-            classes = tag.get('class', [])
-            return 'is-faded' not in classes and 'giveaway__row-inner-wrap' in classes
+        if tag.name == "div":
+            classes = tag.get("class", [])
+            return (
+                "is-faded" not in classes
+                and "giveaway__row-inner-wrap" in classes
+            )
 
     @property
     def has_available_points(self) -> bool:
@@ -109,17 +121,29 @@ class SteamGifts:
                 if not self.has_available_points:
                     break
 
-                if len(game.get('class', [])) == 2 and not self.enter_pinned_games:
+                if (
+                    len(game.get("class", [])) == 2
+                    and not self.enter_pinned_games
+                ):
                     continue
 
-                game_cost = game.find_all('span', {'class': 'giveaway__heading__thin'})[-1]
+                game_cost = game.find_all(
+                    "span", {"class": "giveaway__heading__thin"}
+                )[-1]
 
                 if game_cost:
-                    game_cost = game_cost.getText().replace('(', '').replace(')', '').replace('P', '')
+                    game_cost = (
+                        game_cost.getText()
+                        .replace("(", "")
+                        .replace(")", "")
+                        .replace("P", "")
+                    )
                 else:
                     continue
 
-                game_name = game.find('a', {'class': 'giveaway__heading__name'}).text
+                game_name = game.find(
+                    "a", {"class": "giveaway__heading__name"}
+                ).text
 
                 if self.points - int(game_cost) < 0:
                     txt = f"⛔ Not enough points to enter: {game_name}"
@@ -127,7 +151,9 @@ class SteamGifts:
                     continue
 
                 elif self.points - int(game_cost) >= 0:
-                    game_id = game.find('a', {'class': 'giveaway__heading__name'})['href'].split('/')[2]
+                    game_id = game.find(
+                        "a", {"class": "giveaway__heading__name"}
+                    )["href"].split("/")[2]
                     is_success = self.enter_giveaway(game_id)
                     if is_success:
                         self.points -= int(game_cost)
@@ -135,14 +161,22 @@ class SteamGifts:
                         log(txt, "green")
                         sleep(randint(3, 7))
 
-            n = n+1
+            n = n + 1
 
     def enter_giveaway(self, game_id: str) -> bool:
-        payload = {'xsrf_token': self.xsrf_token, 'do': 'entry_insert', 'code': game_id}
-        entry = requests.post('https://www.steamgifts.com/ajax.php', data=payload, cookies=self.cookie)
+        payload = {
+            "xsrf_token": self.xsrf_token,
+            "do": "entry_insert",
+            "code": game_id,
+        }
+        entry = requests.post(
+            "https://www.steamgifts.com/ajax.php",
+            data=payload,
+            cookies=self.cookie,
+        )
         json_data = json.loads(entry.text)
 
-        if json_data['type'] == 'success':
+        if json_data["type"] == "success":
             return True
 
     def start(self) -> None:
@@ -150,7 +184,10 @@ class SteamGifts:
             self._update_info()
 
             if self.points >= self.min_points:
-                txt = "🤖 Hoho! I am back! You have %d points. Lets hack." % self.points
+                txt = (
+                    "🤖 Hoho! I am back! You have %d points. Lets hack."
+                    % self.points
+                )
                 log(txt, "blue")
                 for filter_type in self.priorities:
                     self.enter_giveaways(filter_type)
@@ -158,10 +195,16 @@ class SteamGifts:
                 self.waiting_for_points = True
 
             if self.waiting_for_points:
-                txt = f"🛋️  Sleeping to get more points. We have {self.points} points, " \
-                      f"but we need {self.min_points} to start."
+                txt = (
+                    f"🛋️  Sleeping to get more points. "
+                    f"We have {self.points} points, "
+                    f"but we need {self.min_points} to start."
+                )
                 log(txt, "yellow")
             if not self.waiting_for_points:
-                log("🛋️  List of games is ended. Waiting 15 mins to update...", "yellow")
+                log(
+                    "🛋️  List of games is ended. Waiting 15 mins to update...",
+                    "yellow",
+                )
 
             sleep(900)
