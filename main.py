@@ -223,13 +223,13 @@ class SteamGifts:
 
             if self.has_available_points:
                 txt = (
-                    f"🛋️  Sleeping to get more points. "
-                    f"We have {self.points} points, "
-                    f"but we need {self.min_points} to start."
+                    "🛋️  List of games is ended. Waiting 15 mins to update..."
                 )
             else:
                 txt = (
-                    "🛋️  List of games is ended. Waiting 15 mins to update..."
+                    f"🛋️  Sleeping to get more points. "
+                    f"We have {self.points} points, "
+                    f"but we need {self.min_points} to start."
                 )
 
             log(txt, "yellow")
