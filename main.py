@@ -1,14 +1,15 @@
 import json
 from random import randint
 from time import sleep
+from typing import Dict, List, Optional
 
 import bs4
 import requests
 from bs4 import BeautifulSoup
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
+
 from common import log
-from typing import Dict, List, Optional
 
 
 class SteamGifts:
