@@ -62,7 +62,7 @@ min_points = 20
 - `priorities` object contains filters, in order, which bot should enter.
 
 ## Run with docker-compose
-1. Download [latest release](https://github.com/s-tyda/steamgifts-bot/releases/tag/v1.0) or clone the code.
+1. Download [latest release](https://github.com/s-tyda/steamgifts-bot/releases/tag/v1.1) or clone the code.
 2. Enter project directory.
 ```bash
 cd steamgifts-bot/
