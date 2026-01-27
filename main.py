@@ -22,6 +22,7 @@ class Page:
         filtered_url = sg.filters[filter_type] % page
         paginated_url = f"{sg.base}/giveaways/{filtered_url}"
         soup = sg.get_soup_from_page(paginated_url)
+        soup.find("div", class_="pinned-giveaways__outer-wrap").decompose()
         self.games = [
             Game(sg, tag)
             for tag in soup.find_all(self._select_not_entered_game)
